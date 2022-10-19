@@ -1,0 +1,148 @@
+module vxlanInfra {
+
+  namespace "http://example.com/vxlanInfra";
+  prefix vxlanInfra;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  description
+    "Bla bla...";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  typedef ipv4-network {
+    type string {
+      pattern
+        '(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}'
+        +  '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+        + '/(([0-9])|([1-2][0-9])|(3[0-2]))';
+    }
+  }
+
+  list vxlanInfra {
+    description "This is an RFS skeleton service";
+
+    key name;
+    leaf name {
+      tailf:info "Unique pod id; ex) site1";
+      tailf:cli-allow-range;
+      type string;
+    }
+
+    uses ncs:service-data;
+    ncs:servicepoint vxlanInfra-servicepoint;
+
+    // may replace this with other ways of refering to the devices.
+
+    leaf asn {
+      tailf:info "ASN; ex) 65002";
+      type uint32;
+      default 65002;
+    }
+
+    leaf anycast-rp-ip {
+      tailf:info "Anycast RP ip address; ex) 192.168.100.100";
+      type inet:ipv4-address;
+      default "192.168.100.100";
+    }
+
+    leaf anycast-group-list {
+      tailf:info "Anycast group list; ex) 239.0.0.0/24";
+      type ipv4-network;
+      default "239.0.0.0/24";
+    }
+
+    leaf anycast-gw-mac {
+      tailf:info "Anycast GW MAC; ex) 0000.2222.3333";
+      type string;
+      default "0000.2222.3333";
+    }
+
+    list node {
+      key switch;
+      leaf switch {
+        tailf:info "node device";
+        type leafref {
+          path "/ncs:devices/ncs:device/ncs:name";
+        }
+      }
+
+      leaf type {
+        mandatory true;
+        tailf:info "type of node: spine or leaf";
+        type enumeration {
+          enum spine {
+            tailf:info "spine switch";
+            value 1;
+          }
+          enum leaf {
+            tailf:info "leaf switch";
+            value 2;
+          }
+        }
+      }
+
+      leaf loopback0-ip {
+        mandatory true;
+        tailf:info "loopback 0 ipv4 address for interlink; ex) 192.168.1.1";
+        type inet:ipv4-address;
+      }
+
+      leaf vtep-ip {
+        when "../type = 'leaf'";
+        mandatory true;
+        tailf:info "Leaf: loopback 1 ipv4 address for vtep; ex) 192.168.1.1";
+        type inet:ipv4-address;
+      }
+    }
+
+    list link {
+      key id;
+      leaf id {
+        tailf:info "underlay link identifier";
+        type string;
+      }
+
+      container spine {
+        leaf device {
+//          mandatory true;
+          type leafref {
+            path "/ncs:devices/ncs:device/ncs:name";
+          }
+        }
+
+        leaf port {
+//          mandatory true;
+          tailf:info "port name of node for inter-link; ex) 1/1";
+          type string;
+        }
+      }
+
+      container leaf {
+        leaf device {
+//          mandatory true;
+          type leafref {
+            path "/ncs:devices/ncs:device/ncs:name";
+          }
+        }
+
+        leaf port {
+//          mandatory true;
+          tailf:info "port name of node for inter-link; ex) 1/1";
+          type string;
+        }
+      }
+    }
+  }
+}

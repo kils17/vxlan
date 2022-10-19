@@ -1,0 +1,11 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <vxlanVrfleaking xmlns="http://example.com/vxlanVrfleaking">
+    <name>Fruit</name>
+    <tenant>
+      <name>Apple</name>
+    </tenant>
+    <tenant>
+      <name>Banana</name>
+    </tenant>
+  </vxlanVrfleaking>
+</config>

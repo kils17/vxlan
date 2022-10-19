@@ -1,0 +1,39 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+      <!--
+          Select the devices from some data structure in the service
+          model. In this skeleton the devices are specified in a leaf-list.
+          Select all devices in that leaf-list:
+      -->
+      <name>{$device}</name>
+      <config>
+        <!--
+            vrf leaking configuration
+        -->
+        <vrf xmlns="http://tail-f.com/ned/cisco-nx">
+          <context>
+            <id>Tenant-{$tenant}</id>
+            <rd>auto</rd>
+            <address-family>
+              <ipv4>
+                <unicast>
+                  <route-target>
+                    <method>import</method>
+                    <asn>{$asn}:{$peer_vni}</asn>
+                    <target-evpn>evpn</target-evpn>
+                  </route-target>
+                  <route-target>
+                    <method>import</method>
+                    <asn>{$asn}:{$peer_vni}</asn>
+                    <target-evpn>non-evpn</target-evpn>
+                  </route-target>
+                </unicast>
+              </ipv4>
+            </address-family>
+          </context>
+        </vrf>
+      </config>
+    </device>
+  </devices>
+</config-template>

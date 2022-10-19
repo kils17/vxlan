@@ -1,0 +1,87 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <?foreach {/link}?>
+    <device>
+      <!--
+          underlay link config
+      -->
+      <name>{spine/device}</name>
+      <config>
+        <interface xmlns="http://tail-f.com/ned/cisco-nx">
+          <Ethernet>
+            <name>{port}</name>
+            <enable>
+              <switchport>false</switchport>
+            </enable>
+            <ip>
+              <ospf>
+                <network>point-to-point</network>
+              </ospf>
+              <redirects>false</redirects>
+              <router>
+                <ospf>
+                  <name>UNDERLAY</name>
+                  <area>0.0.0.0</area>
+                </ospf>
+              </router>
+              <pim>
+                <sparse-mode/>
+              </pim>
+            </ip>
+            <mtu>9216</mtu>
+            <medium>p2p</medium>
+          </Ethernet>
+        </interface>
+        <router xmlns="http://tail-f.com/ned/cisco-nx">
+          <bgp>
+            <neighbor>
+              <id>{/node[switch=leaf/device]/loopback0-ip}</id>
+              <inherit>
+                <peer>PEER-Template</peer>
+              </inherit>
+            </neighbor>
+          </bgp>
+        </router>
+          
+
+      </config>
+    </device>
+    <device>
+      <!--
+          underlay link config
+      -->
+      <name>{leaf/device}</name>
+      <config>
+        <interface xmlns="http://tail-f.com/ned/cisco-nx">
+          <Ethernet>
+            <name>{port}</name>
+            <enable>
+              <switchport>false</switchport>
+            </enable>
+            <ip>
+              <ospf>
+                <network>point-to-point</network>
+              </ospf>
+              <redirects>false</redirects>
+              <router>
+                <ospf>
+                  <name>UNDERLAY</name>
+                  <area>0.0.0.0</area>
+                </ospf>
+              </router>
+              <pim>
+                <sparse-mode/>
+              </pim>
+            </ip>
+            <mtu>9216</mtu>
+            <medium>p2p</medium>
+          </Ethernet>
+        </interface>
+      </config>
+    </device>
+    <?end?>
+
+
+
+  </devices>
+</config-template>

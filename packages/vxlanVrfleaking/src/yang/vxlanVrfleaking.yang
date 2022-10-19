@@ -1,0 +1,52 @@
+module vxlanVrfleaking {
+
+  namespace "http://example.com/vxlanVrfleaking";
+  prefix vxlanVrfleaking;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  import vxlanTenant {
+    prefix vt;
+  }
+
+  description
+    "Bla bla...";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  list vxlanVrfleaking {
+    description "This is an RFS skeleton service";
+
+    key name;
+    leaf name {
+      tailf:info "Unique service id";
+      tailf:cli-allow-range;
+      type string;
+    }
+
+    uses ncs:service-data;
+    ncs:servicepoint vxlanVrfleaking-servicepoint;
+
+    // may replace this with other ways of refering to the devices.
+    list tenant {
+      key name;
+      leaf name {
+        tailf:info "Tenant name which needed VRF leaking";
+        type leafref {
+          path "/vt:vxlanTenant/vt:name";
+        }
+      }
+    }
+  }
+}

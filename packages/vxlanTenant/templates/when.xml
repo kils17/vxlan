@@ -1,0 +1,24 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+      <!--
+          leaf-switch config
+      -->
+      <name>{/vtep/switch}</name>
+      <config>
+        <vlan xmlns="http://tail-f.com/ned/cisco-nx">
+          <vlan-list when="{/vtep/switch/vtep-type='leaf'}">
+            <id>{/l2-vni/vlan-id}</id>
+            <name>L2-VNI-{/l2-vni/vlan-id}-Tenant-{/name}</name>
+            <vn-segment>{/vnid-prefix}{/l2-vni/vlan-id}</vn-segment>
+          </vlan-list>
+          <vlan-list>
+            <id>{/l3-vlanid}</id>
+            <name>L3-VNI-{/l3-vlanid}-Tenant-{/name}</name>
+            <vn-segment>{/vnid-prefix}{/l3-vlanid}</vn-segment>
+          </vlan-list>
+        </vlan>
+      </config>
+    </device>
+  </devices>
+</config-template>

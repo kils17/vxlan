@@ -1,0 +1,20 @@
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <vxlanTenant xmlns="http://example.com/vxlanTenant">
+    <name>Banana</name>
+    <asn>65002</asn>
+    <vnid-prefix>1002</vnid-prefix>
+    <l3-vlanid>902</l3-vlanid>
+    <l2-vni>
+      <vlan-id>211</vlan-id>
+      <svi-ipaddr>172.16.211.1/24</svi-ipaddr>
+    </l2-vni>
+    <vtep>
+      <switch>n9k-bdr1</switch>
+      <type>leaf</type>
+      <access-port>
+        <port>1/4</port>
+        <vlan-id>211</vlan-id>
+      </access-port>
+    </vtep>
+  </vxlanTenant>
+</config>

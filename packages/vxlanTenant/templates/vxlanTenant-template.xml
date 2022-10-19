@@ -1,0 +1,185 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <?foreach {/vtep}?>
+    <device>
+      <!--
+          vtep config
+      -->
+      <name>{switch}</name>
+      <?set myswitch={switch}?>
+
+      <config>
+<!-- l2vni --> 
+        <?if {/vtep[switch=$myswitch]/type = 'leaf'}?>
+        <?foreach {/l2-vni}?>
+        <vlan xmlns="http://tail-f.com/ned/cisco-nx">
+          <vlan-list>
+            <id>{vlan-id}</id>
+            <name>L2-VNI-{vlan-id}-Tenant-{/name}</name>
+            <vn-segment>{/vnid-prefix}{vlan-id}</vn-segment>
+          </vlan-list>
+        </vlan>
+        <?end?>
+        <?end?>
+
+<!-- l3vni --> 
+        <vlan xmlns="http://tail-f.com/ned/cisco-nx">
+          <vlan-list>
+            <id>{/l3-vlanid}</id>
+            <name>L3-VNI-{/l3-vlanid}-Tenant-{/name}</name>
+            <vn-segment>{/vnid-prefix}{/l3-vlanid}</vn-segment>
+          </vlan-list>
+        </vlan>
+
+<!-- l2vni --> 
+        <?if {/vtep[switch=$myswitch]/type = 'leaf'}?>
+        <?foreach {/l2-vni}?>
+        <evpn xmlns="http://tail-f.com/ned/cisco-nx">
+          <vni>
+            <id>{/vnid-prefix}{vlan-id}</id>
+            <l2/>
+            <rd>auto</rd>
+            <route-target>
+              <method>import</method>
+              <rt>auto</rt>
+            </route-target>
+            <route-target>
+              <method>export</method>
+              <rt>auto</rt>
+            </route-target>
+          </vni>
+        </evpn>
+        <?end?>
+        <?end?>
+
+
+<!-- l3vni --> 
+        <route-map xmlns="http://tail-f.com/ned/cisco-nx">
+          <name>permitall</name>
+          <sequence>10</sequence>
+          <operation>permit</operation>
+        </route-map>
+
+<!-- l3vni --> 
+        <vrf xmlns="http://tail-f.com/ned/cisco-nx">
+          <context>
+            <id>Tenant-{/name}</id>
+            <vni>{/vnid-prefix}{/l3-vlanid}</vni>
+            <rd>auto</rd>
+            <address-family>
+              <ipv4>
+                <unicast>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>evpn</target-evpn>
+                  </route-target>
+                  <route-target>
+                    <method>both</method>
+                    <asn>auto</asn>
+                    <target-evpn>non-evpn</target-evpn>
+                  </route-target>
+                </unicast>
+              </ipv4>
+            </address-family>
+          </context>
+        </vrf>
+
+        <interface xmlns="http://tail-f.com/ned/cisco-nx">
+
+<!-- l2vni --> 
+          <?if {/vtep[switch=$myswitch]/type = 'leaf'}?>
+          <?foreach {/l2-vni}?>
+          <Vlan>
+            <name>{vlan-id}</name>
+            <vrf>
+              <member>Tenant-{/name}</member>
+            </vrf>
+            <ip>
+              <address>
+                <ipaddr>{svi-ipaddr}</ipaddr>
+              </address>
+              <redirects>false</redirects>
+            </ip>
+            <fabric>
+              <forwarding>
+                <mode>anycast-gateway</mode>
+              </forwarding>
+            </fabric>
+          </Vlan>
+          <?end?>
+          <?end?>
+
+<!-- l3vni --> 
+          <Vlan>
+            <name>{/l3-vlanid}</name>
+            <vrf>
+              <member>Tenant-{/name}</member>
+            </vrf>
+            <ip>
+              <forward/>
+            </ip>
+          </Vlan>
+
+          <nve>
+            <name>1</name>
+            <member>
+<!-- l2vni --> 
+              <?if {/vtep[switch=$myswitch]/type = 'leaf'}?>
+              <?foreach {/l2-vni}?>
+              <vni>
+                <id>{/vnid-prefix}{vlan-id}</id>
+                <mcast-group>239.0.0.{vlan-id}</mcast-group>
+              </vni>
+              <?end?>
+              <?end?>
+<!-- l3vni --> 
+              <vni>
+                <id>{/vnid-prefix}{/l3-vlanid}</id>
+                <associate-vrf/>
+              </vni>
+            </member>
+          </nve>
+
+<!-- l2vni --> 
+          <?if {/vtep[switch=$myswitch]/type = 'leaf'}?>
+          <?foreach {/vtep[switch=$myswitch]/access-port}?>
+          <Ethernet>
+            <name>{port}</name>
+            <switchport>
+              <access>
+                <vlan>{vlan-id}</vlan>
+              </access>
+            </switchport>
+            <spanning-tree>
+              <port>
+                <type>edge</type>
+              </port>
+            </spanning-tree>
+          </Ethernet>
+          <?end?>
+          <?end?>
+        </interface>
+<!-- l3vni --> 
+        <router xmlns="http://tail-f.com/ned/cisco-nx">
+          <bgp>
+            <id>{/asn}</id>
+            <vrf>
+              <name>Tenant-{/name}</name>
+              <address-family>
+                <proto>ipv4</proto>
+                <type>unicast</type>
+                <redistribute>
+                  <direct>
+                    <route-map>permitall</route-map>
+                  </direct>
+                </redistribute>
+              </address-family>
+            </vrf>
+          </bgp>
+        </router>
+      </config>
+    </device>
+    <?end?>
+  </devices>
+</config-template>
